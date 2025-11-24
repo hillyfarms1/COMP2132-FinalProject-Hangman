@@ -12,9 +12,11 @@ let incorrectGuesses = 1;       //starts at 1 to align with img file names
 let correctGuesses = 0;
 let gamesPlayed = 0;
 let gamesWon = 0;
+let gamesLost = 0;
 let totalIncorrectGuesses = -1;     //starts at -1 because incorrectGuesses starts at 1, see above
 let incorrectGuessesPerGame = 0;
 let isGameOver = false;
+let cookieWarning;
 
 let rope = document.querySelector('.rope');
 let ropeHolder = document.querySelector('.ropeHolder');
@@ -25,6 +27,7 @@ const hintBox = document.querySelector(".hint");
 const wordBox = document.querySelector(".word");
 const youLose = document.querySelector('.youLose');
 const youWin = document.querySelector('.youWin');
+
 
 async function manageStartUI(){
     bgImage.src = `../images/09.jpg`;
@@ -39,10 +42,9 @@ async function manageStartUI(){
     document.querySelector('.keyboardR2').style.display = 'none';
     document.querySelector('.keyboardR3').style.display = 'none';
 
-    bgImage.addEventListener('click', startNewGame);
     initRope();
 
-    const hasExistingData = loadFromCookie();
+    const hasExistingData = await loadFromCookie();
     if (!hasExistingData) {
         await getRandomWordList();
     }
@@ -51,23 +53,36 @@ async function manageStartUI(){
         wordList: words,
         gamesPlayed: gamesPlayed,
         totalIncorrectGuesses: totalIncorrectGuesses,
-        gamesWon: gamesWon
+        gamesWon: gamesWon,
+        wordCount: wordCount
     };
     document.cookie = `gameData=${encodeURIComponent(JSON.stringify(cookieData))}; max-age=7889400`; //3months
 
+    bgImage.addEventListener('click', startNewGame);
+
+    cookieWarning = document.querySelector('.cookieWarning');
+    let html = '';    
+    html += /*html*/`<p>This game uses cookies to store your results so they persist if you refresh or play over multiple sessions.
+                        </p>`;
+    cookieWarning.innerHTML = html;
+
 }
 
-function loadFromCookie() {
+async function loadFromCookie() {
     const cookieString = document.cookie;
     
     if (cookieString.startsWith('gameData=')) {
         const jsonString = decodeURIComponent(cookieString.split('=')[1]);
         const data = JSON.parse(jsonString);
+        const response = await fetch('../data/wordsHints.json');
+        wordsHints = await response.json();
             
         words = data.wordList;
         gamesPlayed = data.gamesPlayed;
         totalIncorrectGuesses = data.totalIncorrectGuesses;
         gamesWon = data.gamesWon;
+        wordCount = data.wordCount;
+        displayResults();
         return true;
     }
     return false;
@@ -80,6 +95,7 @@ function startNewGame(){
     youLose.style.display = 'none';
     bgImage.removeEventListener('click', startNewGame);
     again.removeEventListener('click', startNewGame);
+    cookieWarning.style.display = 'none';
     guessedLetters.forEach(function(letter){
         const cross = document.querySelector(`#${letter} .cross`);
         cross.remove();
@@ -100,8 +116,9 @@ function startNewGame(){
     isGameOver = false;
     incorrectGuesses = 1;       //starts at 1 to align with img file names
     correctGuesses = 0;
-    word = words[wordCount]
-    hint = words[word];
+    word = words[wordCount];
+    hint = wordsHints[word];
+
     wordCount++
 
     displayHint();
@@ -252,23 +269,27 @@ function updateTotals(){
     gamesPlayed++;
     totalIncorrectGuesses += incorrectGuesses;
     incorrectGuessesPerGame = totalIncorrectGuesses / gamesPlayed;
-    let gamesLost = gamesPlayed - gamesWon;
+    gamesLost = gamesPlayed - gamesWon;
 
-    let html = '';
-    const results = document.querySelector('.results');
-    
-    html += /*html*/`<p><strong>Games played:</strong> ${gamesPlayed} out of 100. <strong>Games won/lost:</strong> ${gamesWon}/${gamesLost} <br><strong>Incorrect guesses per game:</strong> ${incorrectGuessesPerGame}
-                        </p>`;
-    results.innerHTML = html;
+    displayResults();
 
     const cookieData = {
         wordList: words, 
         gamesPlayed: gamesPlayed, 
         totalIncorrectGuesses: totalIncorrectGuesses, 
-        gamesWon: gamesWon
+        gamesWon: gamesWon,
+        wordCount: wordCount
     };
     document.cookie = `gameData=${encodeURIComponent(JSON.stringify(cookieData))}; max-age=7889400`;
-    console.log(cookieData)
+}
+
+function displayResults(){
+    let html = '';
+    const results = document.querySelector('.results');
+    
+    html += /*html*/`<p><strong>Games played:</strong> ${gamesPlayed} out of ${words.length}. <strong>Games won/lost:</strong> ${gamesWon}/${gamesLost} <br><strong>Incorrect guesses per game:</strong> ${incorrectGuessesPerGame.toFixed(2)};
+                        </p>`;
+    results.innerHTML = html;
 }
 
 manageStartUI();
