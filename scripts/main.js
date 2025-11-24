@@ -286,7 +286,7 @@ function processGuess(){
         if(word.indexOf(guessedLetter) < 0){                                        //if incorrect guess
             incorrectGuesses++;
             initHandIncorrect();                                                     //increment guess count
-            if(incorrectGuesses === 8){                                             //if max guesses end game
+            if(incorrectGuesses === 7){                                             //if max guesses end game
                 isGameOver = true;
                 updateTotals();
                 youLose.style.display = 'block';                                    //you lose screen
