@@ -2,7 +2,7 @@ const bgImage = document.querySelector(".bgImage");
 
 let words;
 let word;
-let hint;
+let hint = '';
 let wordsHints;
 let wordCount = 0;
 
@@ -41,9 +41,36 @@ async function manageStartUI(){
 
     bgImage.addEventListener('click', startNewGame);
     initRope();
-    await getRandomWordList();
 
-    //const cookieData = {"wordList": words, "gamesPlayed": gamesPlayed, "totalIncorrectGuesses": totalIncorrectGuesses, "gamesWon": gamesWon};
+    const hasExistingData = loadFromCookie();
+    if (!hasExistingData) {
+        await getRandomWordList();
+    }
+
+    const cookieData = {
+        wordList: words,
+        gamesPlayed: gamesPlayed,
+        totalIncorrectGuesses: totalIncorrectGuesses,
+        gamesWon: gamesWon
+    };
+    document.cookie = `gameData=${encodeURIComponent(JSON.stringify(cookieData))}; max-age=7889400`; //3months
+
+}
+
+function loadFromCookie() {
+    const cookieString = document.cookie;
+    
+    if (cookieString.startsWith('gameData=')) {
+        const jsonString = decodeURIComponent(cookieString.split('=')[1]);
+        const data = JSON.parse(jsonString);
+            
+        words = data.wordList;
+        gamesPlayed = data.gamesPlayed;
+        totalIncorrectGuesses = data.totalIncorrectGuesses;
+        gamesWon = data.gamesWon;
+        return true;
+    }
+    return false;
 }
 
 function startNewGame(){
@@ -74,7 +101,7 @@ function startNewGame(){
     incorrectGuesses = 1;       //starts at 1 to align with img file names
     correctGuesses = 0;
     word = words[wordCount]
-    hint = wordsHints[word];
+    hint = words[word];
     wordCount++
 
     displayHint();
@@ -233,6 +260,15 @@ function updateTotals(){
     html += /*html*/`<p><strong>Games played:</strong> ${gamesPlayed} out of 100. <strong>Games won/lost:</strong> ${gamesWon}/${gamesLost} <br><strong>Incorrect guesses per game:</strong> ${incorrectGuessesPerGame}
                         </p>`;
     results.innerHTML = html;
+
+    const cookieData = {
+        wordList: words, 
+        gamesPlayed: gamesPlayed, 
+        totalIncorrectGuesses: totalIncorrectGuesses, 
+        gamesWon: gamesWon
+    };
+    document.cookie = `gameData=${encodeURIComponent(JSON.stringify(cookieData))}; max-age=7889400`;
+    console.log(cookieData)
 }
 
 manageStartUI();
