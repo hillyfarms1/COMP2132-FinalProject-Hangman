@@ -29,7 +29,10 @@ const youLose = document.querySelector('.youLose');
 const youWin = document.querySelector('.youWin');
 const results = document.querySelector('.results');
 const cookieWarning = document.querySelector('.cookieWarning');
+const answerHolder = document.querySelector('.answerHolder');
 
+
+manageStart();
 
 
 async function manageStart(skipCookieLoad = false){
@@ -62,7 +65,6 @@ async function manageStart(skipCookieLoad = false){
     cookieWarning.innerHTML = html;
 };
 
-
 function setStartUI(){
     bgImage.src = `../images/08.jpg`;
     bgImage.style.cursor = 'pointer';
@@ -74,6 +76,7 @@ function setStartUI(){
     youWin.style.display = 'none';
     youLose.style.display = 'none';
     results.style.display = 'none';
+    answerHolder.style.display = 'none';
     document.querySelector('.keyboardR1').style.display = 'none';
     document.querySelector('.keyboardR2').style.display = 'none';
     document.querySelector('.keyboardR3').style.display = 'none';
@@ -121,6 +124,7 @@ function setGameUI(){
     again.style.display = 'none'; 
     youWin.style.display = 'none'; 
     youLose.style.display = 'none';
+    answerHolder.style.display = 'none';
     bgImage.removeEventListener('click', startNewGame);
     again.removeEventListener('click', startNewGame);
     cookieWarning.style.display = 'none';
@@ -293,11 +297,18 @@ function processGuess(){
                 reset.style.display = 'none'; 
                 again.style.display = 'block';
                 again.addEventListener('click', startNewGame);
-                document.addEventListener('keydown', handleEnter);                
+                document.addEventListener('keydown', handleEnter); 
+                displayAnswer();
             };
             bgImage.src = `../images/0${incorrectGuesses}.jpg`;                     //change hangman image
         };
 }};
+
+function handleEnter(e) {
+    if (e.key === 'Enter') {
+        startNewGame();
+    }
+};
 
 function updateTotals(){
     gamesPlayed++;
@@ -324,13 +335,18 @@ function displayResults(){
     results.innerHTML = html;
 };
 
-function handleEnter(e) {
-    if (e.key === 'Enter') {
-        startNewGame();
-    }
+function displayAnswer(){
+    answerHolder.innerHTML = '';
+    answerHolder.innerHTML = /*html*/`<button id="showAnswer">Show answer?</button>`;
+    const showAnswer = document.querySelector('#showAnswer');
+    showAnswer.style.display = 'block';
+    answerHolder.style.display = 'block';
+    answerHolder.addEventListener('click', function eventHandler(e){
+        showAnswer.style.display = 'none';
+        answerHolder.innerHTML = /*html*/`<p>${word.toUpperCase()}</p>`;
+        answerHolder.removeEventListener('click', eventHandler);
+    });
 };
-
-manageStart();
 
 class HandAnimation {
     constructor(config) {
