@@ -330,7 +330,7 @@ function updateTotals(){
 
 function displayResults(){
     let html = '';    
-    html += /*html*/`<p><strong>Games played:</strong> ${gamesPlayed} out of ${words.length}. <strong>Games won/lost:</strong> ${gamesWon}/${gamesLost} <br><strong>Incorrect guesses per game:</strong> ${incorrectGuessesPerGame.toFixed(2)};
+    html += /*html*/`<p><strong>Games played:</strong> ${gamesPlayed} out of ${words.length}. <strong>Games won/lost:</strong> ${gamesWon}/${gamesLost} <br><strong>Incorrect guesses per game:</strong> ${incorrectGuessesPerGame.toFixed(2)}
                         </p>`;
     results.innerHTML = html;
 };
